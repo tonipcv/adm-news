@@ -1,31 +1,41 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { writeFile } from 'fs/promises';
+import { join } from 'path';
+import { mkdir } from 'fs/promises';
 
 // GET /api/v1/news - Lista todas as notícias
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const searchParams = request.nextUrl.searchParams;
-    const limit = searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : undefined;
-    const offset = searchParams.get('offset') ? parseInt(searchParams.get('offset')!) : undefined;
-
+    console.log('📥 API: Recebendo requisição GET');
+    
     const news = await prisma.news.findMany({
       orderBy: {
         publishedAt: 'desc'
-      },
-      take: limit,
-      skip: offset,
+      }
     });
     
+    console.log('📤 API: Enviando resposta', {
+      count: news.length,
+      sample: news[0]
+    });
+
     return NextResponse.json({
       success: true,
       data: news
+    }, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-store'
+      }
     });
   } catch (error) {
-    console.error('Database error:', error);
+    console.error('🔥 API Error:', error);
     return NextResponse.json(
       { 
         success: false,
-        error: 'Erro interno do servidor' 
+        error: 'Erro interno do servidor',
+        details: error instanceof Error ? error.message : 'Erro desconhecido'
       },
       { status: 500 }
     );
@@ -35,26 +45,48 @@ export async function GET(request: NextRequest) {
 // POST /api/v1/news - Cria uma nova notícia
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    const formData = await request.formData();
     
-    // Validação básica
-    if (!body.title || !body.content) {
-      return NextResponse.json(
-        { 
-          success: false,
-          error: 'Título e conteúdo são obrigatórios' 
-        },
-        { status: 400 }
-      );
+    // Extrai os campos obrigatórios
+    const title = formData.get('title') as string;
+    const summary = formData.get('summary') as string;
+    const content = formData.get('content') as string;
+    
+    // Campos opcionais
+    const video = formData.get('video') as string | null;
+    const image = formData.get('image') as File | null;
+    
+    let imageUrl = '';
+    
+    if (image && image instanceof File) {
+      try {
+        // Garante que o diretório existe
+        const uploadDir = join(process.cwd(), 'public/uploads');
+        await mkdir(uploadDir, { recursive: true });
+        
+        // Cria um nome único para o arquivo
+        const bytes = await image.arrayBuffer();
+        const buffer = Buffer.from(bytes);
+        
+        // Define o caminho para salvar a imagem
+        const fileName = `${Date.now()}-${image.name}`;
+        const fullPath = join(uploadDir, fileName);
+        
+        // Salva o arquivo
+        await writeFile(fullPath, buffer);
+        imageUrl = `/uploads/${fileName}`;
+      } catch (error) {
+        console.error('Erro ao salvar imagem:', error);
+      }
     }
 
     const news = await prisma.news.create({
       data: {
-        title: body.title,
-        summary: body.summary || '',
-        content: body.content,
-        image: body.image || null,
-        video: body.video || null,
+        title,
+        summary,
+        content,
+        image: imageUrl || null,
+        video: video || null,
       }
     });
 
@@ -67,7 +99,8 @@ export async function POST(request: Request) {
     return NextResponse.json(
       { 
         success: false,
-        error: 'Erro ao criar notícia' 
+        error: 'Erro ao criar notícia',
+        details: error instanceof Error ? error.message : 'Erro desconhecido'
       },
       { status: 500 }
     );

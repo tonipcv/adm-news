@@ -3,6 +3,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface PageProps {
   params: {
@@ -94,10 +96,10 @@ export default async function NewsPage({ params }: PageProps) {
               </div>
             )}
 
-            <div className="prose prose-xs sm:prose-base prose-invert max-w-none">
-              <p className="text-zinc-400 leading-relaxed whitespace-pre-wrap text-sm sm:text-base">
+            <div className="prose prose-invert max-w-none">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
                 {news.content}
-              </p>
+              </ReactMarkdown>
             </div>
           </CardContent>
         </Card>

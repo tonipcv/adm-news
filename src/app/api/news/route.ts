@@ -4,6 +4,9 @@ import { Prisma } from '@prisma/client';
 
 export async function GET() {
   try {
+    // Log para debug
+    console.log('DATABASE_URL:', process.env.DATABASE_URL);
+    
     await prisma.$connect();
     
     const news = await prisma.news.findMany({
@@ -12,19 +15,22 @@ export async function GET() {
       }
     });
     
-    return NextResponse.json(news);
+    return NextResponse.json({
+      success: true,
+      data: news
+    });
   } catch (error) {
-    console.error('Database error:', error);
+    console.error('Database error details:', {
+      error,
+      env: process.env.NODE_ENV,
+      hasUrl: !!process.env.DATABASE_URL
+    });
     
-    if (error instanceof Prisma.PrismaClientInitializationError) {
-      return NextResponse.json(
-        { error: 'Erro de conexão com o banco de dados' },
-        { status: 500 }
-      );
-    }
-
     return NextResponse.json(
-      { error: 'Erro interno do servidor' },
+      { 
+        success: false,
+        error: 'Erro interno do servidor' 
+      },
       { status: 500 }
     );
   } finally {
