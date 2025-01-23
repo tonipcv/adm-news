@@ -1,14 +1,14 @@
 'use client';
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { X, Upload, Image as ImageIcon } from "lucide-react";
+import { X } from "lucide-react";
 
 interface NewsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: FormData) => void;
+  onSubmit: (data: NewsFormData) => void;
   initialData?: NewsFormData;
 }
 
@@ -28,46 +28,19 @@ export function NewsModal({ isOpen, onClose, onSubmit, initialData }: NewsModalP
     image: '',
     video: ''
   });
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string>(initialData?.image || '');
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!isOpen) return null;
-
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setSelectedImage(file);
-      // Cria URL para preview
-      const url = URL.createObjectURL(file);
-      setPreviewUrl(url);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const formDataToSend = new FormData();
-    formDataToSend.append('title', formData.title);
-    formDataToSend.append('summary', formData.summary);
-    formDataToSend.append('content', formData.content);
-    
-    if (formData.video) {
-      formDataToSend.append('video', formData.video);
-    }
-    
-    if (selectedImage) {
-      formDataToSend.append('image', selectedImage);
-    } else if (formData.image) {
-      formDataToSend.append('imageUrl', formData.image);
-    }
-
     try {
       const response = await fetch('/api/v1/news', {
         method: 'POST',
-        body: formDataToSend,
-        // Não precisa definir Content-Type aqui, o navegador vai definir automaticamente
-        // com o boundary correto para multipart/form-data
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
       });
 
       if (!response.ok) {
@@ -129,35 +102,23 @@ export function NewsModal({ isOpen, onClose, onSubmit, initialData }: NewsModalP
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-sm text-zinc-400">Imagem</label>
-              <div className="flex flex-col gap-2">
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  ref={fileInputRef}
-                  onChange={handleImageSelect}
-                />
-                <Button 
-                  type="button"
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <Upload className="h-4 w-4 mr-2" />
-                  Selecionar Imagem
-                </Button>
-                {previewUrl && (
-                  <div className="relative aspect-video rounded-lg overflow-hidden bg-zinc-800">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={previewUrl}
-                      alt="Preview"
-                      className="object-cover w-full h-full"
-                    />
-                  </div>
-                )}
-              </div>
+              <label className="text-sm text-zinc-400">URL da Imagem</label>
+              <Input
+                value={formData.image || ''}
+                onChange={e => setFormData(prev => ({ ...prev, image: e.target.value }))}
+                placeholder="https://exemplo.com/imagem.jpg"
+                className="bg-zinc-800 border-zinc-700"
+              />
+              {formData.image && (
+                <div className="relative aspect-video rounded-lg overflow-hidden bg-zinc-800 mt-2">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={formData.image}
+                    alt="Preview"
+                    className="object-cover w-full h-full"
+                  />
+                </div>
+              )}
             </div>
 
             <div className="space-y-2">
