@@ -45,48 +45,15 @@ export async function GET() {
 // POST /api/v1/news - Cria uma nova notícia
 export async function POST(request: Request) {
   try {
-    const formData = await request.formData();
+    const data = await request.json();
     
-    // Extrai os campos obrigatórios
-    const title = formData.get('title') as string;
-    const summary = formData.get('summary') as string;
-    const content = formData.get('content') as string;
-    
-    // Campos opcionais
-    const video = formData.get('video') as string | null;
-    const image = formData.get('image') as File | null;
-    
-    let imageUrl = '';
-    
-    if (image && image instanceof File) {
-      try {
-        // Garante que o diretório existe
-        const uploadDir = join(process.cwd(), 'public/uploads');
-        await mkdir(uploadDir, { recursive: true });
-        
-        // Cria um nome único para o arquivo
-        const bytes = await image.arrayBuffer();
-        const buffer = Buffer.from(bytes);
-        
-        // Define o caminho para salvar a imagem
-        const fileName = `${Date.now()}-${image.name}`;
-        const fullPath = join(uploadDir, fileName);
-        
-        // Salva o arquivo
-        await writeFile(fullPath, buffer);
-        imageUrl = `/uploads/${fileName}`;
-      } catch (error) {
-        console.error('Erro ao salvar imagem:', error);
-      }
-    }
-
     const news = await prisma.news.create({
       data: {
-        title,
-        summary,
-        content,
-        image: imageUrl || null,
-        video: video || null,
+        title: data.title,
+        summary: data.summary || '',
+        content: data.content,
+        image: data.image || null,
+        video: data.video || null,
       }
     });
 
