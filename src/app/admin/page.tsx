@@ -5,9 +5,33 @@ import NewsSection from '@/components/NewsSection';
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { NewsModal } from '@/components/NewsModal';
+import { News } from '@/types/news';
 
 export default function AdminPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedNews, setSelectedNews] = useState<News | null>(null);
+
+  const handleEdit = (item: News) => {
+    setSelectedNews(item);
+    setIsModalOpen(true);
+  };
+
+  const handleDelete = async (id: number) => {
+    try {
+      const response = await fetch(`/api/v1/news?id=${id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro ao deletar notícia');
+      }
+
+      window.location.reload();
+    } catch (error) {
+      console.error('Erro ao deletar:', error);
+      // Adicione tratamento de erro aqui
+    }
+  };
 
   return (
     <div className="min-h-screen bg-black">
@@ -24,7 +48,12 @@ export default function AdminPage() {
       </header>
 
       <main className="max-w-4xl mx-auto px-4 py-6 sm:py-12">
-        <NewsSection isAdmin showControls />
+        <NewsSection 
+          isAdmin 
+          showControls
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
       </main>
 
       <NewsModal
@@ -33,6 +62,7 @@ export default function AdminPage() {
         onSubmit={async (formData) => {
           setIsModalOpen(false);
         }}
+        initialData={selectedNews}
       />
     </div>
   );

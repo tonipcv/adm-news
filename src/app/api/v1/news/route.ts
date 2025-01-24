@@ -77,55 +77,22 @@ export async function POST(request: Request) {
 // PUT /api/v1/news/:id - Atualiza uma notícia existente
 export async function PUT(request: Request) {
   try {
-    const body = await request.json();
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
-
+    const data = await request.json();
+    const { id, ...updateData } = data;
+    
     if (!id) {
-      return NextResponse.json(
-        { 
-          success: false,
-          error: 'ID é obrigatório' 
-        },
-        { status: 400 }
-      );
-    }
-
-    // Validação básica
-    if (!body.title || !body.content) {
-      return NextResponse.json(
-        { 
-          success: false,
-          error: 'Título e conteúdo são obrigatórios' 
-        },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'ID is required' }, { status: 400 });
     }
 
     const news = await prisma.news.update({
       where: { id: parseInt(id) },
-      data: {
-        title: body.title,
-        summary: body.summary || '',
-        content: body.content,
-        image: body.image || null,
-        video: body.video || null,
-      }
+      data: updateData
     });
 
-    return NextResponse.json({
-      success: true,
-      data: news
-    });
+    return NextResponse.json(news);
   } catch (error) {
     console.error('Error updating news:', error);
-    return NextResponse.json(
-      { 
-        success: false,
-        error: 'Erro ao atualizar notícia' 
-      },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Error updating news' }, { status: 500 });
   }
 }
 
@@ -134,33 +101,20 @@ export async function DELETE(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
-
+    
     if (!id) {
-      return NextResponse.json(
-        { 
-          success: false,
-          error: 'ID é obrigatório' 
-        },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'ID is required' }, { status: 400 });
     }
 
     await prisma.news.delete({
-      where: { id: parseInt(id) }
+      where: {
+        id: parseInt(id)
+      }
     });
 
-    return NextResponse.json({
-      success: true,
-      message: 'Notícia removida com sucesso'
-    });
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error deleting news:', error);
-    return NextResponse.json(
-      { 
-        success: false,
-        error: 'Erro ao remover notícia' 
-      },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Error deleting news' }, { status: 500 });
   }
 } 

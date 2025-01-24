@@ -6,20 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { News } from '@/types/news';
 
-interface NewsCardProps {
-  id: number;
-  title: string;
-  summary: string;
-  content: string;
-  image?: string;
-  video?: string;
-  publishedAt: string;
+interface NewsCardProps extends News {
   showControls?: boolean;
-  onEdit?: () => void;
+  onEdit?: (item: NewsCardProps) => void;
+  onDelete?: (id: number) => void;
 }
 
-export function NewsCard({ id, title, summary, content, image, publishedAt, showControls }: NewsCardProps) {
+export function NewsCard({ id, title, summary, content, image, publishedAt, showControls, onEdit, onDelete }: NewsCardProps) {
   return (
     <article className="px-3 py-2.5 sm:p-3 md:p-4 border-b border-zinc-800 hover:bg-zinc-900/50 transition-colors">
       <div className="flex gap-2.5 sm:gap-3 md:gap-4">
@@ -94,6 +89,25 @@ export function NewsCard({ id, title, summary, content, image, publishedAt, show
               <span>12</span>
             </Button>
           </div>
+
+          {showControls && (
+            <div className="flex justify-end gap-2 mt-2">
+              <Button 
+                variant="outline"
+                size="sm"
+                onClick={() => onEdit?.({ id, title, summary, content, image, publishedAt })}
+              >
+                Editar
+              </Button>
+              <Button 
+                variant="outline"
+                size="sm"
+                onClick={() => onDelete?.(id)}
+              >
+                Deletar  
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </article>

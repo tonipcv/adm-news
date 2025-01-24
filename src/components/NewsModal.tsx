@@ -4,29 +4,24 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { X } from "lucide-react";
+import { News } from '@/types/news';
 
 interface NewsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: NewsFormData) => void;
-  initialData?: NewsFormData;
-}
-
-interface NewsFormData {
-  title: string;
-  summary: string;
-  content: string;
-  image?: string;
-  video?: string;
+  onSubmit: (data: News) => void;
+  initialData?: News | null;
 }
 
 export function NewsModal({ isOpen, onClose, onSubmit, initialData }: NewsModalProps) {
-  const [formData, setFormData] = useState<NewsFormData>(initialData || {
-    title: '',
-    summary: '',
-    content: '',
-    image: '',
-    video: ''
+  const [formData, setFormData] = useState<News>({
+    title: initialData?.title || '',
+    summary: initialData?.summary || '',
+    content: initialData?.content || '',
+    image: initialData?.image || '',
+    video: initialData?.video || '',
+    id: initialData?.id || 0,
+    publishedAt: initialData?.publishedAt || ''
   });
 
   if (!isOpen) return null;

@@ -2,24 +2,17 @@
 import { useState, useEffect } from 'react';
 import { NewsCard } from './NewsCard';
 import { Alert, AlertDescription } from "@/components/ui/alert";
-
-interface News {
-  id: number;
-  title: string;
-  summary: string;
-  content: string;
-  image?: string;
-  video?: string;
-  publishedAt: string;
-}
+import { News } from '@/types/news';
 
 interface NewsSectionProps {
   isAdmin?: boolean;
   isPreview?: boolean;
   showControls?: boolean;
+  onEdit?: (item: News) => void;
+  onDelete?: (id: number) => void;
 }
 
-export default function NewsSection({ isAdmin = false, isPreview = false, showControls = false }: NewsSectionProps) {
+export default function NewsSection({ isAdmin = false, isPreview = false, showControls = false, onEdit, onDelete }: NewsSectionProps) {
   const [news, setNews] = useState<News[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -79,6 +72,8 @@ export default function NewsSection({ isAdmin = false, isPreview = false, showCo
           key={item.id}
           {...item}
           showControls={showControls}
+          onEdit={onEdit}
+          onDelete={onDelete}
         />
       ))}
     </div>
