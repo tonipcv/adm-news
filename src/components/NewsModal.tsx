@@ -1,10 +1,11 @@
 'use client';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { X } from "lucide-react";
 import { News } from '@/types/news';
+import Image from 'next/image';
 
 interface NewsModalProps {
   isOpen: boolean;
@@ -24,31 +25,77 @@ export function NewsModal({ isOpen, onClose, onSubmit, initialData }: NewsModalP
     publishedAt: initialData?.publishedAt || ''
   });
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Validação básica
+    if (!formData.title.trim()) {
+      alert('Por favor, preencha o título');
+      return;
+    }
+    
     try {
+      const method = initialData ? 'PUT' : 'POST';
+      console.log('Enviando dados:', formData); // Debug
+
       const response = await fetch('/api/v1/news', {
-        method: 'POST',
+        method,
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          publishedAt: new Date().toISOString(),
+        }),
       });
 
       if (!response.ok) {
-        throw new Error('Erro ao criar notícia');
+        throw new Error('Erro ao salvar notícia');
       }
 
       const result = await response.json();
+      console.log('Resposta:', result);
+
       if (result.success) {
         onClose();
         window.location.reload();
       }
     } catch (error) {
       console.error('Erro ao enviar formulário:', error);
+      alert('Erro ao salvar notícia');
+    }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const filename = `news/${Date.now()}-${file.name}`;
+
+      const response = await fetch(`/api/upload?filename=${filename}`, {
+        method: 'POST',
+        body: file,
+      });
+
+      const data = await response.json();
+      console.log('Resposta do upload:', data);
+
+      if (!response.ok) throw new Error('Upload failed');
+
+      // Atualiza o estado com a URL da imagem
+      setFormData(prev => {
+        const newState = { ...prev, image: data.url };
+        console.log('Novo estado após upload:', newState);
+        return newState;
+      });
+    } catch (error) {
+      console.error('Erro no upload:', error);
+      alert('Erro ao fazer upload da imagem');
     }
   };
 
@@ -97,20 +144,29 @@ export function NewsModal({ isOpen, onClose, onSubmit, initialData }: NewsModalP
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-sm text-zinc-400">URL da Imagem</label>
-              <Input
-                value={formData.image || ''}
-                onChange={e => setFormData(prev => ({ ...prev, image: e.target.value }))}
-                placeholder="https://exemplo.com/imagem.jpg"
-                className="bg-zinc-800 border-zinc-700"
-              />
+              <label className="text-sm text-zinc-400">Imagem</label>
+              <div className="flex gap-2">
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  ref={fileInputRef}
+                  className="bg-zinc-800 border-zinc-700"
+                />
+                <Input
+                  value={formData.image || ''}
+                  onChange={e => setFormData(prev => ({ ...prev, image: e.target.value }))}
+                  placeholder="Ou cole a URL da imagem"
+                  className="bg-zinc-800 border-zinc-700"
+                />
+              </div>
               {formData.image && (
                 <div className="relative aspect-video rounded-lg overflow-hidden bg-zinc-800 mt-2">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
+                  <Image
                     src={formData.image}
                     alt="Preview"
-                    className="object-cover w-full h-full"
+                    fill
+                    className="object-cover"
                   />
                 </div>
               )}
@@ -131,7 +187,10 @@ export function NewsModal({ isOpen, onClose, onSubmit, initialData }: NewsModalP
             <Button variant="outline" type="button" onClick={onClose}>
               Cancelar
             </Button>
-            <Button type="submit">
+            <Button 
+              type="submit"
+              disabled={!formData.title.trim()}
+            >
               {initialData ? 'Salvar' : 'Criar'}
             </Button>
           </div>

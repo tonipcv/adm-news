@@ -10,9 +10,11 @@
     "test:db": "ts-node --project tsconfig.json src/lib/db.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.735.0",
     "@prisma/client": "^5.8.1",
     "@radix-ui/react-avatar": "^1.1.2",
     "@radix-ui/react-slot": "^1.1.1",
+    "@vercel/blob": "^0.27.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.473.0",

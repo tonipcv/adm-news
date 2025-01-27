@@ -46,16 +46,20 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const data = await request.json();
+    console.log('Dados recebidos:', data); // Debug
     
     const news = await prisma.news.create({
       data: {
         title: data.title,
         summary: data.summary || '',
         content: data.content,
-        image: data.image || null,
+        image: data.image || null, // Garante que a imagem é salva
         video: data.video || null,
+        publishedAt: new Date(),
       }
     });
+
+    console.log('Notícia criada:', news); // Debug
 
     return NextResponse.json({
       success: true,

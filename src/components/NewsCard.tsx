@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { News } from '@/types/news';
+import { useState } from 'react';
 
 interface NewsCardProps extends News {
   showControls?: boolean;
@@ -15,6 +16,8 @@ interface NewsCardProps extends News {
 }
 
 export function NewsCard({ id, title, summary, content, image, publishedAt, showControls, onEdit, onDelete }: NewsCardProps) {
+  const [imageError, setImageError] = useState(false);
+
   return (
     <article className="px-3 py-2.5 sm:p-3 md:p-4 border-b border-zinc-800 hover:bg-zinc-900/50 transition-colors">
       <div className="flex gap-2.5 sm:gap-3 md:gap-4">
@@ -62,7 +65,7 @@ export function NewsCard({ id, title, summary, content, image, publishedAt, show
           </div>
 
           {/* Imagem */}
-          {image && (
+          {image && !imageError && (
             <div className="relative mt-2 sm:mt-2.5 md:mt-3 aspect-[16/9] rounded-md sm:rounded-lg md:rounded-xl overflow-hidden">
               <Image
                 src={image}
@@ -70,6 +73,8 @@ export function NewsCard({ id, title, summary, content, image, publishedAt, show
                 fill
                 className="object-cover"
                 sizes="(max-width: 640px) 100vw, (max-width: 768px) 600px, 800px"
+                onError={() => setImageError(true)}
+                unoptimized
               />
             </div>
           )}
