@@ -3,7 +3,8 @@ export interface News {
   title: string;
   summary: string;
   content: string;
-  image?: string;
-  video?: string;
+  image?: string | null;
+  video?: string | null;
   publishedAt: string;
+  isPro: boolean;
 } 

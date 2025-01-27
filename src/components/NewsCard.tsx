@@ -51,7 +51,7 @@ export function NewsCard({ id, title, summary, content, image, publishedAt, show
 
           {/* Título e Conteúdo */}
           <div className="space-y-1 sm:space-y-1.5">
-            <Link href={`/news/${id}`}>
+            <Link href={`/news/${id}`} className="block">
               <h2 className="font-bold text-white text-sm sm:text-base line-clamp-2">{title}</h2>
             </Link>
             <div className="text-zinc-300 text-xs sm:text-sm leading-relaxed">

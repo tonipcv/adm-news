@@ -15,4 +15,5 @@ model News {
   image       String?
   video       String?
   publishedAt DateTime @default(now())
+  isPro       Boolean  @default(true)
 } 

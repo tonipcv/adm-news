@@ -1,17 +1,16 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-export async function GET(req: Request) {
+export async function GET(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
   try {
-    // Extrair o ID da URL
-    const url = new URL(req.url);
-    const segments = url.pathname.split('/').filter(Boolean);
-    const idString = segments[segments.length - 1];
+    const id = parseInt(params.id);
     
-    const id = parseInt(idString, 10);
     if (isNaN(id)) {
       return NextResponse.json(
-        { success: false, error: 'ID inválido' },
+        { error: 'ID inválido' },
         { status: 400 }
       );
     }
@@ -22,25 +21,16 @@ export async function GET(req: Request) {
 
     if (!news) {
       return NextResponse.json(
-        { 
-          success: false,
-          error: 'Notícia não encontrada' 
-        },
+        { error: 'Notícia não encontrada' },
         { status: 404 }
       );
     }
 
-    return NextResponse.json({
-      success: true,
-      data: news
-    });
+    return NextResponse.json({ data: news });
   } catch (error) {
-    console.error('Error fetching news:', error);
+    console.error('Erro ao buscar notícia:', error);
     return NextResponse.json(
-      { 
-        success: false,
-        error: 'Erro ao buscar notícia' 
-      },
+      { error: 'Erro interno do servidor' },
       { status: 500 }
     );
   }

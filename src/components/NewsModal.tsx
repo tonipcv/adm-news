@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { X } from "lucide-react";
 import { News } from '@/types/news';
 import Image from 'next/image';
+import { Switch } from "@/components/ui/switch";
 
 interface NewsModalProps {
   isOpen: boolean;
@@ -22,7 +23,8 @@ export function NewsModal({ isOpen, onClose, onSubmit, initialData }: NewsModalP
     image: initialData?.image || '',
     video: initialData?.video || '',
     id: initialData?.id || 0,
-    publishedAt: initialData?.publishedAt || ''
+    publishedAt: initialData?.publishedAt || '',
+    isPro: initialData?.isPro ?? true
   });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -181,6 +183,19 @@ export function NewsModal({ isOpen, onClose, onSubmit, initialData }: NewsModalP
                 className="bg-zinc-800 border-zinc-700"
               />
             </div>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <label className="text-sm text-zinc-400">Tipo de Conteúdo</label>
+              <p className="text-xs text-zinc-500">
+                {formData.isPro ? 'Conteúdo exclusivo PRO' : 'Conteúdo gratuito'}
+              </p>
+            </div>
+            <Switch
+              checked={!formData.isPro}
+              onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isPro: !checked }))}
+            />
           </div>
 
           <div className="flex justify-end gap-2 pt-4">

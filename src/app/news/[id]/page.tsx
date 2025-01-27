@@ -2,17 +2,13 @@ import { prisma } from '@/lib/prisma';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { ArrowLeft, Clock, Calendar } from "lucide-react";
+import { notFound } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import Header from '@/components/Header';
 
-interface PageProps {
-  params: {
-    id: string;
-  };
-}
-
-export default async function NewsPage({ params }: PageProps) {
+export default async function NewsPage({ params }: { params: { id: string } }) {
   const news = await prisma.news.findUnique({
     where: {
       id: parseInt(params.id)
@@ -20,89 +16,111 @@ export default async function NewsPage({ params }: PageProps) {
   });
 
   if (!news) {
-    return (
-      <div className="min-h-screen bg-black p-8">
-        <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-xl text-white mb-4">Notícia não encontrada</h1>
-          <Button variant="ghost" asChild>
-            <Link href="/" className="text-zinc-400 hover:text-white">
-              ← Voltar
-            </Link>
-          </Button>
-        </div>
-      </div>
-    );
+    notFound();
   }
+
+  const publishDate = new Date(news.publishedAt);
 
   return (
     <div className="min-h-screen bg-black">
-      <header className="border-b border-zinc-800">
-        <div className="max-w-4xl mx-auto px-4 py-4 sm:py-6">
-          <div className="flex justify-between items-center">
-            <h1 className="text-xl sm:text-2xl font-normal text-white">Portal</h1>
+      <Header />
+      
+      <header className="sticky top-0 z-10 backdrop-blur-sm bg-black/70 border-b border-zinc-800">
+        <div className="max-w-4xl mx-auto px-4 py-3">
+          <div className="flex items-center justify-between">
             <Button variant="ghost" size="sm" asChild>
-              <Link href="/" className="text-zinc-400 hover:text-white text-sm sm:text-base">
-                ← Voltar
+              <Link href="/" className="text-zinc-400 hover:text-white inline-flex items-center">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Voltar para notícias
               </Link>
             </Button>
+            {news.isPro && (
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-500/90 text-amber-50">
+                PRO
+              </span>
+            )}
           </div>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-6 sm:py-12">
-        <Card className="bg-zinc-900 border-zinc-800 overflow-hidden">
+      <main className="max-w-4xl mx-auto px-4 py-8">
+        <article className="space-y-6">
+          <div className="space-y-4">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white">
+              {news.title}
+            </h1>
+            
+            <div className="flex items-center gap-4 text-sm text-zinc-400">
+              <div className="flex items-center">
+                <Calendar className="h-4 w-4 mr-1.5" />
+                <time dateTime={news.publishedAt}>
+                  {publishDate.toLocaleDateString('pt-BR', {
+                    day: '2-digit',
+                    month: 'long',
+                    year: 'numeric'
+                  })}
+                </time>
+              </div>
+              <div className="flex items-center">
+                <Clock className="h-4 w-4 mr-1.5" />
+                <span>{Math.ceil(news.content.length / 1000)} min de leitura</span>
+              </div>
+            </div>
+          </div>
+
           {news.image && (
-            <div className="relative w-full aspect-[16/9] sm:h-[500px]">
+            <div className="relative aspect-video rounded-xl overflow-hidden bg-zinc-800">
               <Image
                 src={news.image}
                 alt={news.title}
                 fill
                 className="object-cover"
                 priority
-                sizes="(max-width: 768px) 100vw, 800px"
+                sizes="(max-width: 1024px) 100vw, 900px"
               />
             </div>
           )}
-          
-          <CardContent className="p-4 sm:p-8">
-            <div className="mb-4 sm:mb-8">
-              <h1 className="text-lg sm:text-3xl font-normal text-white mb-2 sm:mb-4">
-                {news.title}
-              </h1>
-              <p className="text-zinc-500 text-xs sm:text-sm">
-                {new Date(news.publishedAt).toLocaleDateString('pt-BR', {
-                  day: '2-digit',
-                  month: 'long',
-                  year: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit'
-                })}
-              </p>
-            </div>
 
-            <p className="text-sm sm:text-xl text-zinc-300 mb-4 sm:mb-8 font-normal">
+          <div className="border-l-4 border-zinc-800 pl-6 py-4">
+            <p className="text-lg sm:text-xl text-zinc-300 font-medium italic">
               {news.summary}
             </p>
+          </div>
 
-            {news.video && (
-              <div className="mb-4 sm:mb-8 rounded overflow-hidden">
-                <div className="aspect-video">
-                  <iframe
-                    src={news.video}
-                    allowFullScreen
-                    className="w-full h-full"
-                  />
-                </div>
-              </div>
-            )}
+          <div className="prose prose-invert prose-zinc max-w-none 
+            prose-headings:font-medium prose-headings:text-white 
+            prose-p:text-zinc-300 prose-strong:text-white prose-strong:font-medium
+            prose-a:text-blue-400 hover:prose-a:text-blue-300
+            prose-blockquote:border-zinc-800 prose-blockquote:text-zinc-400
+            prose-code:text-zinc-300 prose-pre:bg-zinc-900 prose-pre:border prose-pre:border-zinc-800
+            prose-img:rounded-xl prose-img:border prose-img:border-zinc-800
+            prose-hr:border-zinc-800">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {news.content}
+            </ReactMarkdown>
+          </div>
 
-            <div className="prose prose-invert max-w-none">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                {news.content}
-              </ReactMarkdown>
+          {news.video && (
+            <div className="aspect-video rounded-xl overflow-hidden bg-zinc-900 border border-zinc-800">
+              <iframe
+                src={news.video}
+                className="w-full h-full"
+                allowFullScreen
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              />
             </div>
-          </CardContent>
-        </Card>
+          )}
+        </article>
+
+        <nav className="mt-12 pt-8 border-t border-zinc-800">
+          <div className="flex justify-between text-sm">
+            <Button variant="ghost" size="sm" asChild>
+              <Link href="/" className="text-zinc-400 hover:text-white">
+                ← Voltar para notícias
+              </Link>
+            </Button>
+          </div>
+        </nav>
       </main>
     </div>
   );
