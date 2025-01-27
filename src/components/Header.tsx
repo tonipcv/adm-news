@@ -1,16 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { Button } from "@/components/ui/button";
 
-interface HeaderProps {
-  title: string;
-  backLink?: {
-    href: string;
-    text: string;
-  };
-}
-
-export default function Header({ title, backLink }: HeaderProps) {
+export default function Header() {
   return (
     <div className="bg-black border-b border-zinc-800">
       <div className="max-w-5xl mx-auto px-4">

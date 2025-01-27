@@ -53,7 +53,7 @@ export default async function NewsPage({ params }: { params: { id: string } }) {
             <div className="flex items-center gap-4 text-sm text-zinc-400">
               <div className="flex items-center">
                 <Calendar className="h-4 w-4 mr-1.5" />
-                <time dateTime={news.publishedAt}>
+                <time dateTime={publishDate.toISOString()}>
                   {publishDate.toLocaleDateString('pt-BR', {
                     day: '2-digit',
                     month: 'long',

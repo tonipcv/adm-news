@@ -15,7 +15,7 @@ interface NewsCardProps extends News {
   onDelete?: (id: number) => void;
 }
 
-export function NewsCard({ id, title, summary, content, image, publishedAt, showControls, onEdit, onDelete }: NewsCardProps) {
+export function NewsCard({ id, title, summary, content, image, publishedAt, isPro, showControls, onEdit, onDelete }: NewsCardProps) {
   const [imageError, setImageError] = useState(false);
 
   return (
@@ -100,7 +100,15 @@ export function NewsCard({ id, title, summary, content, image, publishedAt, show
               <Button 
                 variant="outline"
                 size="sm"
-                onClick={() => onEdit?.({ id, title, summary, content, image, publishedAt })}
+                onClick={() => onEdit?.({ 
+                  id, 
+                  title, 
+                  summary, 
+                  content, 
+                  image, 
+                  publishedAt,
+                  isPro
+                })}
               >
                 Editar
               </Button>
