@@ -35,7 +35,7 @@ export default async function NewsPage({ params }: { params: { id: string } }) {
               </Link>
             </Button>
             {news.isPro && (
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-500/90 text-amber-50">
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-zinc-950 text-white border border-zinc-800">
                 PRO
               </span>
             )}

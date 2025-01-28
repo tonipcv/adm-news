@@ -40,7 +40,7 @@ export default async function HomePage() {
                         <span className={`
                           px-2 py-0.5 rounded-full text-[10px] font-medium
                           ${item.isPro 
-                            ? 'bg-amber-500/90 text-amber-50' 
+                            ? 'bg-zinc-950 text-white border border-zinc-800' 
                             : 'bg-emerald-500/90 text-emerald-50'
                           }
                         `}>
